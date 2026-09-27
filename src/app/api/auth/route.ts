@@ -16,52 +16,7 @@ export async function POST(request: NextRequest) {
 
       const { isDatabaseAvailable } = await import("@/lib/db");
       if (!(await isDatabaseAvailable())) {
-        const adminEmail = process.env.ADMIN_EMAIL || "admin@lumiere.com";
-        const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
-
-        if (parsed.data.email === adminEmail && parsed.data.password === adminPassword) {
-          const token = await signToken({
-            userId: "admin-id",
-            email: adminEmail,
-            role: "admin",
-          });
-
-          const response = apiSuccess({
-            user: { id: "admin-id", email: adminEmail, name: "Administrator", role: "admin" },
-          });
-
-          response.cookies.set("auth_token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 60 * 60 * 24 * 7,
-            path: "/",
-          });
-
-          return response;
-        }
-
-        const mockUserId = "usr_" + Math.random().toString(36).substring(2, 11);
-        const mockName = parsed.data.email.split("@")[0];
-        const token = await signToken({
-          userId: mockUserId,
-          email: parsed.data.email,
-          role: "customer",
-        });
-
-        const response = apiSuccess({
-          user: { id: mockUserId, email: parsed.data.email, name: mockName, role: "customer" },
-        });
-
-        response.cookies.set("auth_token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: 60 * 60 * 24 * 7,
-          path: "/",
-        });
-
-        return response;
+        return apiError("Database service is unavailable. Please try again later.", 503);
       }
 
       const user = await prisma.user.findUnique({
@@ -100,36 +55,7 @@ export async function POST(request: NextRequest) {
 
       const { isDatabaseAvailable } = await import("@/lib/db");
       if (!(await isDatabaseAvailable())) {
-        const mockUserId = "usr_" + Math.random().toString(36).substring(2, 11);
-        const { syncCustomerToCRM } = await import("@/lib/crm");
-        try {
-          await syncCustomerToCRM({
-            email: parsed.data.email,
-            name: parsed.data.name,
-          });
-        } catch (err) {
-          console.error("Customer sync to CRM failed (fallback):", err);
-        }
-
-        const token = await signToken({
-          userId: mockUserId,
-          email: parsed.data.email,
-          role: "customer",
-        });
-
-        const response = apiSuccess({
-          user: { id: mockUserId, email: parsed.data.email, name: parsed.data.name, role: "customer" },
-        });
-
-        response.cookies.set("auth_token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: 60 * 60 * 24 * 7,
-          path: "/",
-        });
-
-        return response;
+        return apiError("Database service is unavailable. Please try again later.", 503);
       }
 
       const existing = await prisma.user.findUnique({
@@ -147,15 +73,17 @@ export async function POST(request: NextRequest) {
           password: hashedPassword,
         },
       });
-      // Sync customer registration to CRM (awaited to ensure serverless completion)
-      const { syncCustomerToCRM } = await import("@/lib/crm");
-      try {
-        await syncCustomerToCRM({
-          email: user.email,
-          name: user.name,
-        });
-      } catch (err) {
-        console.error("Customer sync to CRM failed:", err);
+      // Sync customer registration to CRM if configured
+      const { isCrmConfigured, syncCustomerToCRM } = await import("@/lib/crm");
+      if (isCrmConfigured()) {
+        try {
+          await syncCustomerToCRM({
+            email: user.email,
+            name: user.name,
+          });
+        } catch (err) {
+          console.error("Customer sync to CRM failed:", err);
+        }
       }
 
       const token = await signToken({

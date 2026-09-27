@@ -126,13 +126,7 @@ export default function LoginPage() {
         )}
       </p>
 
-      {mode === "login" && (
-        <p className="text-center text-xs text-muted mt-8 p-4 bg-cream">
-          Admin demo: admin@lumiere.com / admin123
-        </p>
-      )}
-
-      <p className="text-center mt-4">
+      <p className="text-center mt-6">
         <Link href="/shop" className="text-sm text-muted hover:text-gold">
           Continue as guest
         </Link>

@@ -1,9 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "dev-secret-change-me"
-);
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is not configured");
+  }
+  return new TextEncoder().encode(secret);
+}
 
 export interface AuthPayload {
   userId: string;
@@ -12,6 +16,7 @@ export interface AuthPayload {
 }
 
 export async function signToken(payload: AuthPayload): Promise<string> {
+  const secret = getJwtSecret();
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -21,6 +26,7 @@ export async function signToken(payload: AuthPayload): Promise<string> {
 
 export async function verifyToken(token: string): Promise<AuthPayload | null> {
   try {
+    const secret = getJwtSecret();
     const { payload } = await jwtVerify(token, secret);
     return payload as unknown as AuthPayload;
   } catch {
@@ -29,10 +35,14 @@ export async function verifyToken(token: string): Promise<AuthPayload | null> {
 }
 
 export async function getAuthUser(): Promise<AuthPayload | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
-  if (!token) return null;
-  return verifyToken(token);
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+    if (!token) return null;
+    return verifyToken(token);
+  } catch {
+    return null;
+  }
 }
 
 export async function requireAuth(): Promise<AuthPayload> {

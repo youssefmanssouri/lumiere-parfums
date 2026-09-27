@@ -1,9 +1,5 @@
 {
   "buildCommand": "prisma generate && next build",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "env": {
-    "CRM_API_URL": "https://86e8ceba35a537.lhr.life",
-    "CRM_SYNC_TOKEN": "secure-crm-sync-token-987654"
-  }
+  "framework": "nextjs"
 }

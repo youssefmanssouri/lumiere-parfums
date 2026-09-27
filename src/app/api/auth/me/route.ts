@@ -7,6 +7,11 @@ export async function GET() {
     const auth = await getAuthUser();
     if (!auth) return apiSuccess({ user: null });
 
+    const { isDatabaseAvailable } = await import("@/lib/db");
+    if (!(await isDatabaseAvailable())) {
+      return apiError("Database service is unavailable", 503);
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: auth.userId },
       select: { id: true, email: true, name: true, role: true },

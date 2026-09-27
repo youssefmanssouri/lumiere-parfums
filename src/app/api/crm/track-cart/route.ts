@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth";
 import { getOrCreateCart, calculateCartTotals } from "@/lib/cart";
-import { syncCartToCRM } from "@/lib/crm";
+import { isCrmConfigured, syncCartToCRM } from "@/lib/crm";
 
 export async function POST() {
   try {
+    if (!isCrmConfigured()) {
+      return NextResponse.json({ success: true, synced: false });
+    }
+
     const user = await getAuthUser();
     const cart = await getOrCreateCart(user?.userId);
     

@@ -1,15 +1,20 @@
-const CRM_API_URL = process.env.CRM_API_URL || "http://localhost:3001";
-const CRM_SYNC_TOKEN = process.env.CRM_SYNC_TOKEN || "secure-crm-sync-token-987654";
+const CRM_API_URL = process.env.CRM_API_URL;
+const CRM_SYNC_TOKEN = process.env.CRM_SYNC_TOKEN;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function postToCRM(endpoint: string, payload: any) {
+export function isCrmConfigured(): boolean {
+  return Boolean(CRM_API_URL && CRM_SYNC_TOKEN);
+}
+
+async function postToCRM(endpoint: string, payload: unknown) {
+  if (!isCrmConfigured()) {
+    return false;
+  }
+
   const res = await fetch(`${CRM_API_URL}${endpoint}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Sync-Token": CRM_SYNC_TOKEN,
-      "bypass-tunnel-reminder": "true",
-      "ngrok-skip-browser-warning": "true",
+      "X-Sync-Token": CRM_SYNC_TOKEN as string,
     },
     body: JSON.stringify(payload),
   });

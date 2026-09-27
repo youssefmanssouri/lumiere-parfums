@@ -3,9 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
-    const syncToken = request.headers.get("X-Sync-Token");
-    const expectedToken = process.env.CRM_SYNC_TOKEN || "secure-crm-sync-token-987654";
+    const expectedToken = process.env.CRM_SYNC_TOKEN;
+    if (!expectedToken) {
+      return NextResponse.json({ error: "CRM synchronization is not configured" }, { status: 503 });
+    }
 
+    const syncToken = request.headers.get("X-Sync-Token");
     if (!syncToken || syncToken !== expectedToken) {
       return NextResponse.json({ error: "Unauthorized sync call" }, { status: 401 });
     }
@@ -29,6 +32,20 @@ export async function POST(request: NextRequest) {
 
     if (!slug || !name || !brand || price === undefined) {
       return NextResponse.json({ error: "Missing required product data" }, { status: 400 });
+    }
+
+    const numPrice = Number(price);
+    if (isNaN(numPrice) || numPrice <= 0) {
+      return NextResponse.json({ error: "Price must be a valid positive number" }, { status: 400 });
+    }
+
+    if (typeof slug !== "string" || !/^[a-z0-9-]+$/.test(slug)) {
+      return NextResponse.json({ error: "Invalid product slug format" }, { status: 400 });
+    }
+
+    const { isDatabaseAvailable } = await import("@/lib/db");
+    if (!(await isDatabaseAvailable())) {
+      return NextResponse.json({ error: "Database service unavailable" }, { status: 503 });
     }
 
     const inStock = stockLevel !== undefined ? stockLevel > 0 : true;

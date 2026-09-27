@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth";
-import { syncActivityToCRM } from "@/lib/crm";
+import { isCrmConfigured, syncActivityToCRM } from "@/lib/crm";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +9,10 @@ export async function POST(request: NextRequest) {
 
     if (!page) {
       return NextResponse.json({ error: "Page is required" }, { status: 400 });
+    }
+
+    if (!isCrmConfigured()) {
+      return NextResponse.json({ success: true, synced: false });
     }
 
     const user = await getAuthUser();
@@ -22,7 +26,7 @@ export async function POST(request: NextRequest) {
       browser: browser || "Unknown",
     });
 
-    return NextResponse.json({ success });
+    return NextResponse.json({ success, synced: true });
   } catch (error) {
     console.error("Track activity error:", error);
     return NextResponse.json({ error: "Failed to track activity" }, { status: 500 });

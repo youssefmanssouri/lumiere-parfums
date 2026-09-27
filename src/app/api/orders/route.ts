@@ -5,7 +5,7 @@ import { isDatabaseAvailable } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess, generateOrderNumber } from "@/lib/api";
 import { checkoutSchema } from "@/lib/validations";
-import { syncOrderToCRM } from "@/lib/crm";
+import { isCrmConfigured, syncOrderToCRM } from "@/lib/crm";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,36 +30,37 @@ export async function POST(request: NextRequest) {
       await clearCookieCart();
 
       let syncResult = { success: true, error: null as string | null };
-      // Sync order to CRM (awaited to ensure serverless completion)
-      try {
-        const ok = await syncOrderToCRM({
-          orderNumber,
-          email: parsed.data.email,
-          name: parsed.data.name,
-          address: parsed.data.address,
-          city: parsed.data.city,
-          state: parsed.data.state,
-          zip: parsed.data.zip,
-          country: parsed.data.country || "US",
-          status: "confirmed",
-          subtotal: totals.subtotal,
-          shipping: totals.shipping,
-          tax: totals.tax,
-          total: totals.total,
-          items: cart.items.map((item) => ({
-            productId: item.productId,
-            name: item.product.name,
-            brand: item.product.brand,
-            price: item.product.price,
-            quantity: item.quantity,
-            image: item.product.image || "",
-          })),
-        });
-        if (!ok) {
-          syncResult = { success: false, error: "syncOrderToCRM returned false" };
+      if (isCrmConfigured()) {
+        try {
+          const ok = await syncOrderToCRM({
+            orderNumber,
+            email: parsed.data.email,
+            name: parsed.data.name,
+            address: parsed.data.address,
+            city: parsed.data.city,
+            state: parsed.data.state,
+            zip: parsed.data.zip,
+            country: parsed.data.country || "US",
+            status: "confirmed",
+            subtotal: totals.subtotal,
+            shipping: totals.shipping,
+            tax: totals.tax,
+            total: totals.total,
+            items: cart.items.map((item) => ({
+              productId: item.productId,
+              name: item.product.name,
+              brand: item.product.brand,
+              price: item.product.price,
+              quantity: item.quantity,
+              image: item.product.image || "",
+            })),
+          });
+          if (!ok) {
+            syncResult = { success: false, error: "syncOrderToCRM returned false" };
+          }
+        } catch (err) {
+          syncResult = { success: false, error: err instanceof Error ? err.message : String(err) };
         }
-      } catch (err) {
-        syncResult = { success: false, error: err instanceof Error ? err.message : String(err) };
       }
 
       return apiSuccess({
@@ -114,33 +115,35 @@ export async function POST(request: NextRequest) {
       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
     }
 
-    // Sync order to CRM (awaited to ensure serverless completion)
-    try {
-      await syncOrderToCRM({
-        orderNumber: order.orderNumber,
-        email: order.email,
-        name: order.name,
-        address: order.address,
-        city: order.city,
-        state: order.state,
-        zip: order.zip,
-        country: order.country,
-        status: order.status,
-        subtotal: order.subtotal,
-        shipping: order.shipping,
-        tax: order.tax,
-        total: order.total,
-        items: order.items.map((item) => ({
-          productId: item.productId,
-          name: item.name,
-          brand: item.brand,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
-        })),
-      });
-    } catch (err) {
-      console.error("Order sync to CRM failed:", err);
+    // Sync order to CRM if configured
+    if (isCrmConfigured()) {
+      try {
+        await syncOrderToCRM({
+          orderNumber: order.orderNumber,
+          email: order.email,
+          name: order.name,
+          address: order.address,
+          city: order.city,
+          state: order.state,
+          zip: order.zip,
+          country: order.country,
+          status: order.status,
+          subtotal: order.subtotal,
+          shipping: order.shipping,
+          tax: order.tax,
+          total: order.total,
+          items: order.items.map((item) => ({
+            productId: item.productId,
+            name: item.name,
+            brand: item.brand,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
+        });
+      } catch (err) {
+        console.error("Order sync to CRM failed:", err);
+      }
     }
 
     return apiSuccess({ order });
