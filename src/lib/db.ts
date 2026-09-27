@@ -1,37 +1,30 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getStaticProducts } from "@/data/products";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+const globalForDb = globalThis as unknown as {
   dbAvailable: boolean | undefined;
 };
 
 export async function isDatabaseAvailable(): Promise<boolean> {
-  if (globalForPrisma.dbAvailable !== undefined) {
-    return globalForPrisma.dbAvailable;
+  if (globalForDb.dbAvailable !== undefined) {
+    return globalForDb.dbAvailable;
   }
 
   try {
-    const prisma = getPrisma();
     await prisma.$queryRaw`SELECT 1`;
-    globalForPrisma.dbAvailable = true;
+    globalForDb.dbAvailable = true;
     return true;
   } catch {
-    globalForPrisma.dbAvailable = false;
+    globalForDb.dbAvailable = false;
     return false;
   }
 }
 
-export function getPrisma(): PrismaClient {
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient({
-      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    });
-  }
-  return globalForPrisma.prisma;
+export function getPrisma() {
+  return prisma;
 }
 
-export const prisma = getPrisma();
+export { prisma };
 
 export async function getProducts(filters?: {
   search?: string;
@@ -46,10 +39,10 @@ export async function getProducts(filters?: {
     const where: Record<string, unknown> = { inStock: true };
     if (filters?.search) {
       where.OR = [
-        { name: { contains: filters.search } },
-        { brand: { contains: filters.search } },
-        { description: { contains: filters.search } },
-        { notes: { contains: filters.search } },
+        { name: { contains: filters.search, mode: "insensitive" } },
+        { brand: { contains: filters.search, mode: "insensitive" } },
+        { description: { contains: filters.search, mode: "insensitive" } },
+        { notes: { contains: filters.search, mode: "insensitive" } },
       ];
     }
     if (filters?.category) where.category = filters.category;
