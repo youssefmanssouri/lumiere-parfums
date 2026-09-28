@@ -29,7 +29,7 @@ export const products = [
     concentration: "Eau de Parfum",
     size: "100ml",
     price: 495,
-    image: "/products/creed-aventus.svg",
+    image: "/products/creed-aventus.jpg",
     rating: 4.8,
     reviewCount: 1923,
     featured: true,
