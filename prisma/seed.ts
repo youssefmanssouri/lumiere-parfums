@@ -192,7 +192,10 @@ async function main() {
     await prisma.product.create({ data: product });
   }
 
-  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    throw new Error("ADMIN_PASSWORD environment variable is required to seed the admin user");
+  }
   const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
   await prisma.user.create({

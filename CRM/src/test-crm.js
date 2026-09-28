@@ -145,7 +145,7 @@ async function runTests() {
   console.log('\n6. Logging in to CRM as Admin...');
   const crmLoginRes = await makeRequest(`${CRM_URL}/api/auth/login`, 'POST', {}, {
     email: 'admin@lumiere-crm.com',
-    password: 'admin123'
+    password: process.env.CRM_ADMIN_PASSWORD || 'test-crm-password'
   });
 
   if (crmLoginRes.statusCode !== 200 || !crmLoginRes.body.success) {

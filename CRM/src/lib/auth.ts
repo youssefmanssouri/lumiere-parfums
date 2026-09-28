@@ -2,9 +2,13 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 
-const secret = new TextEncoder().encode(
-  process.env.CRM_JWT_SECRET || "crm-dev-secret-change-me"
-);
+function getCrmJwtSecret(): Uint8Array {
+  const secret = process.env.CRM_JWT_SECRET;
+  if (!secret) {
+    throw new Error("CRM_JWT_SECRET environment variable is not configured");
+  }
+  return new TextEncoder().encode(secret);
+}
 
 export interface AuthPayload {
   userId: string;
@@ -14,6 +18,7 @@ export interface AuthPayload {
 }
 
 export async function signToken(payload: AuthPayload): Promise<string> {
+  const secret = getCrmJwtSecret();
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -23,6 +28,7 @@ export async function signToken(payload: AuthPayload): Promise<string> {
 
 export async function verifyToken(token: string): Promise<AuthPayload | null> {
   try {
+    const secret = getCrmJwtSecret();
     const { payload } = await jwtVerify(token, secret);
     return payload as unknown as AuthPayload;
   } catch {

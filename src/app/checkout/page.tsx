@@ -99,9 +99,13 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Store minimal client-facing receipt details for the confirmation page
+      // Store minimal client-facing receipt details for the confirmation page & account history
       try {
         sessionStorage.setItem("recent_order", JSON.stringify(data.data.order));
+        const existing = JSON.parse(localStorage.getItem("lumiere_customer_orders") || "[]");
+        const filtered = Array.isArray(existing) ? existing.filter((o: { orderNumber?: string }) => o.orderNumber !== data.data.order.orderNumber) : [];
+        const updated = [data.data.order, ...filtered];
+        localStorage.setItem("lumiere_customer_orders", JSON.stringify(updated.slice(0, 20)));
       } catch {
         /* storage may be disabled in private mode */
       }

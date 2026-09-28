@@ -6,6 +6,21 @@ export async function GET() {
   try {
     await requireAdmin();
 
+    const { isDatabaseAvailable } = await import("@/lib/db");
+    if (!(await isDatabaseAvailable())) {
+      const { getStaticProducts } = await import("@/data/products");
+      const staticProducts = getStaticProducts();
+      return apiSuccess({
+        stats: {
+          productCount: staticProducts.length,
+          orderCount: 0,
+          userCount: 1,
+          totalRevenue: 0,
+        },
+        recentOrders: [],
+      });
+    }
+
     const [productCount, orderCount, userCount, revenue, recentOrders] =
       await Promise.all([
         prisma.product.count(),
@@ -13,7 +28,7 @@ export async function GET() {
         prisma.user.count({ where: { role: "customer" } }),
         prisma.order.aggregate({ _sum: { total: true } }),
         prisma.order.findMany({
-          take: 5,
+          take: 50,
           orderBy: { createdAt: "desc" },
           include: { items: true },
         }),

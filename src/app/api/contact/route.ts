@@ -8,15 +8,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const type = body.type;
 
+    const { isDatabaseAvailable } = await import("@/lib/db");
+    const dbOk = await isDatabaseAvailable();
+
     if (type === "newsletter") {
       const parsed = newsletterSchema.safeParse(body);
       if (!parsed.success) return apiError(parsed.error.errors[0].message);
 
-      await prisma.newsletter.upsert({
-        where: { email: parsed.data.email },
-        update: {},
-        create: { email: parsed.data.email },
-      });
+      if (dbOk) {
+        await prisma.newsletter.upsert({
+          where: { email: parsed.data.email },
+          update: {},
+          create: { email: parsed.data.email },
+        });
+      }
 
       return apiSuccess({ message: "Subscribed successfully" });
     }
@@ -25,7 +30,9 @@ export async function POST(request: NextRequest) {
       const parsed = contactSchema.safeParse(body);
       if (!parsed.success) return apiError(parsed.error.errors[0].message);
 
-      await prisma.contactMessage.create({ data: parsed.data });
+      if (dbOk) {
+        await prisma.contactMessage.create({ data: parsed.data });
+      }
 
       return apiSuccess({ message: "Message sent successfully" });
     }

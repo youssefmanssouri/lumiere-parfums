@@ -99,6 +99,24 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+          <div className="pt-2 border-t border-charcoal/10 space-y-2">
+            <Link
+              href={user ? "/account" : "/login"}
+              className="block py-2 text-sm tracking-widest uppercase text-charcoal/80 hover:text-gold font-medium"
+              onClick={() => setMobileOpen(false)}
+            >
+              {user ? `My Account (${user.name || user.email})` : "Sign In / Register"}
+            </Link>
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                className="block py-2 text-sm tracking-widest uppercase text-gold hover:text-charcoal font-medium"
+                onClick={() => setMobileOpen(false)}
+              >
+                Admin Dashboard
+              </Link>
+            )}
+          </div>
         </nav>
       )}
     </header>

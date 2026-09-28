@@ -272,9 +272,12 @@ async function main() {
   await prisma.user.deleteMany();
 
   // 1. Create Staff Users
-  const adminPassword = process.env.CRM_ADMIN_PASSWORD || "admin123";
-  const managerPassword = "manager123";
-  const supportPassword = "support123";
+  const adminPassword = process.env.CRM_ADMIN_PASSWORD;
+  if (!adminPassword) {
+    throw new Error("CRM_ADMIN_PASSWORD environment variable is required to seed the CRM admin user");
+  }
+  const managerPassword = process.env.CRM_MANAGER_PASSWORD || `${adminPassword}-mgr`;
+  const supportPassword = process.env.CRM_SUPPORT_PASSWORD || `${adminPassword}-sup`;
 
   const hashedAdmin = await bcrypt.hash(adminPassword, 12);
   const hashedManager = await bcrypt.hash(managerPassword, 12);

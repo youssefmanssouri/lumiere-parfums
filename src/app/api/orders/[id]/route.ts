@@ -32,8 +32,10 @@ export async function GET(
       return apiError("Database service unavailable", 503);
     }
 
-    const order = await prisma.order.findUnique({
-      where: { id },
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [{ id }, { orderNumber: id }],
+      },
       include: { items: true },
     });
 
@@ -84,8 +86,10 @@ export async function PATCH(
       return apiError("Database service unavailable", 503);
     }
 
-    const existingOrder = await prisma.order.findUnique({
-      where: { id },
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        OR: [{ id }, { orderNumber: id }],
+      },
     });
 
     if (!existingOrder) {
@@ -93,7 +97,7 @@ export async function PATCH(
     }
 
     const order = await prisma.order.update({
-      where: { id },
+      where: { id: existingOrder.id },
       data: { status },
       include: { items: true },
     });

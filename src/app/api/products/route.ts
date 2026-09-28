@@ -35,11 +35,67 @@ export async function GET(request: NextRequest) {
       ),
     ].sort();
 
-    return apiSuccess({
-      products,
-      filters: { categories, genders, notes },
-    });
-  } catch {
-    return apiError("Failed to fetch products", 500);
+      return apiSuccess({
+        products,
+        filters: { categories, genders, notes },
+      });
+    } catch {
+      return apiError("Failed to fetch products", 500);
+    }
   }
-}
+
+  export async function POST(request: NextRequest) {
+    try {
+      const { requireAdmin } = await import("@/lib/auth");
+      await requireAdmin();
+
+      const body = await request.json();
+      const { name, brand, description, notes, category, gender, concentration, size, price, image, featured } = body;
+
+      if (!name || !brand || !price) {
+        return apiError("Name, brand, and price are required", 400);
+      }
+
+      const { isDatabaseAvailable } = await import("@/lib/db");
+      if (!(await isDatabaseAvailable())) {
+        return apiError("Database service is unavailable", 503);
+      }
+
+      const { prisma } = await import("@/lib/prisma");
+
+      const baseSlug = `${brand}-${name}`
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
+
+      let slug = baseSlug;
+      const existing = await prisma.product.findUnique({ where: { slug } });
+      if (existing) {
+        slug = `${baseSlug}-${Date.now()}`;
+      }
+
+      const product = await prisma.product.create({
+        data: {
+          slug,
+          name,
+          brand,
+          description: description || `${name} by ${brand}.`,
+          notes: notes || "Bergamot, Cedar, Musk",
+          category: category || "Woody Aromatic",
+          gender: gender || "Unisex",
+          concentration: concentration || "Eau de Parfum",
+          size: size || "100ml",
+          price: parseFloat(String(price)),
+          image: image || "/products/dior-sauvage-edp.jpg",
+          featured: Boolean(featured),
+          inStock: true,
+        },
+      });
+
+      return apiSuccess({ product });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to create product";
+      const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+      return apiError(message, status);
+    }
+  }
