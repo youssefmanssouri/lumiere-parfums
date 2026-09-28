@@ -202,6 +202,8 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
                     key={opt.size}
                     type="button"
                     onClick={() => setSelectedVolume(opt)}
+                    aria-pressed={isSelected}
+                    aria-label={`${opt.label}, ${formatPrice(opt.price)}`}
                     className={`py-3 px-3 text-center border transition-all rounded-sm text-xs ${
                       isSelected
                         ? "border-gold bg-gold/10 text-charcoal font-semibold shadow-xs"

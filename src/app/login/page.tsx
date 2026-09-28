@@ -58,11 +58,13 @@ function LoginForm() {
 
         {mode === "register" && (
           <div>
-            <label className="block text-xs tracking-widest uppercase text-muted mb-2">
+            <label htmlFor="login-name" className="block text-xs tracking-widest uppercase text-muted mb-2">
               Full Name
             </label>
             <input
+              id="login-name"
               required
+              autoComplete="name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full px-4 py-3 border border-charcoal/10 focus:border-gold focus:outline-none text-sm"
@@ -71,12 +73,14 @@ function LoginForm() {
         )}
 
         <div>
-          <label className="block text-xs tracking-widest uppercase text-muted mb-2">
+          <label htmlFor="login-email" className="block text-xs tracking-widest uppercase text-muted mb-2">
             Email
           </label>
           <input
+            id="login-email"
             required
             type="email"
+            autoComplete="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full px-4 py-3 border border-charcoal/10 focus:border-gold focus:outline-none text-sm"
@@ -84,13 +88,15 @@ function LoginForm() {
         </div>
 
         <div>
-          <label className="block text-xs tracking-widest uppercase text-muted mb-2">
+          <label htmlFor="login-password" className="block text-xs tracking-widest uppercase text-muted mb-2">
             Password
           </label>
           <input
+            id="login-password"
             required
             type="password"
             minLength={6}
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="w-full px-4 py-3 border border-charcoal/10 focus:border-gold focus:outline-none text-sm"

@@ -85,9 +85,14 @@ export default function ContactPage() {
               Be the first to know about new arrivals and exclusive offers.
             </p>
             <form onSubmit={handleNewsletter} className="flex gap-2">
+              <label htmlFor="newsletter-email" className="sr-only">
+                Subscribe to Newsletter
+              </label>
               <input
+                id="newsletter-email"
                 type="email"
                 required
+                autoComplete="email"
                 placeholder="Your email"
                 value={newsletter}
                 onChange={(e) => setNewsletter(e.target.value)}
@@ -118,23 +123,27 @@ export default function ContactPage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs tracking-widest uppercase text-muted mb-2">
+              <label htmlFor="contact-name" className="block text-xs tracking-widest uppercase text-muted mb-2">
                 Name
               </label>
               <input
+                id="contact-name"
                 required
+                autoComplete="name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full px-4 py-3 border border-charcoal/10 focus:border-gold focus:outline-none text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs tracking-widest uppercase text-muted mb-2">
+              <label htmlFor="contact-email" className="block text-xs tracking-widest uppercase text-muted mb-2">
                 Email
               </label>
               <input
+                id="contact-email"
                 required
                 type="email"
+                autoComplete="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="w-full px-4 py-3 border border-charcoal/10 focus:border-gold focus:outline-none text-sm"
@@ -143,10 +152,11 @@ export default function ContactPage() {
           </div>
 
           <div>
-            <label className="block text-xs tracking-widest uppercase text-muted mb-2">
+            <label htmlFor="contact-subject" className="block text-xs tracking-widest uppercase text-muted mb-2">
               Subject
             </label>
             <input
+              id="contact-subject"
               required
               value={form.subject}
               onChange={(e) => setForm({ ...form, subject: e.target.value })}
@@ -155,10 +165,11 @@ export default function ContactPage() {
           </div>
 
           <div>
-            <label className="block text-xs tracking-widest uppercase text-muted mb-2">
+            <label htmlFor="contact-message" className="block text-xs tracking-widest uppercase text-muted mb-2">
               Message
             </label>
             <textarea
+              id="contact-message"
               required
               rows={6}
               value={form.message}

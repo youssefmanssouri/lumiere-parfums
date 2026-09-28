@@ -190,13 +190,18 @@ export default function CheckoutPage() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
+                <label htmlFor="checkout-name" className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
                   Full Name *
                 </label>
                 <input
+                  id="checkout-name"
+                  name="name"
+                  autoComplete="name"
                   required
                   type="text"
                   value={form.name}
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={errors.name ? "name-error" : undefined}
                   onChange={(e) => {
                     setForm({ ...form, name: e.target.value });
                     if (errors.name) setErrors({ ...errors, name: undefined });
@@ -206,17 +211,22 @@ export default function CheckoutPage() {
                     errors.name ? "border-red-400 focus:border-red-500" : "border-charcoal/15 focus:border-gold"
                   }`}
                 />
-                {errors.name && <p className="text-[11px] text-red-600 mt-1">{errors.name}</p>}
+                {errors.name && <p id="name-error" className="text-[11px] text-red-600 mt-1">{errors.name}</p>}
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
+                <label htmlFor="checkout-email" className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
                   Email Address *
                 </label>
                 <input
+                  id="checkout-email"
+                  name="email"
+                  autoComplete="email"
                   required
                   type="email"
                   value={form.email}
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? "email-error" : undefined}
                   onChange={(e) => {
                     setForm({ ...form, email: e.target.value });
                     if (errors.email) setErrors({ ...errors, email: undefined });
@@ -226,17 +236,22 @@ export default function CheckoutPage() {
                     errors.email ? "border-red-400 focus:border-red-500" : "border-charcoal/15 focus:border-gold"
                   }`}
                 />
-                {errors.email && <p className="text-[11px] text-red-600 mt-1">{errors.email}</p>}
+                {errors.email && <p id="email-error" className="text-[11px] text-red-600 mt-1">{errors.email}</p>}
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
+                <label htmlFor="checkout-address" className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
                   Street Address *
                 </label>
                 <input
+                  id="checkout-address"
+                  name="address"
+                  autoComplete="street-address"
                   required
                   type="text"
                   value={form.address}
+                  aria-invalid={Boolean(errors.address)}
+                  aria-describedby={errors.address ? "address-error" : undefined}
                   onChange={(e) => {
                     setForm({ ...form, address: e.target.value });
                     if (errors.address) setErrors({ ...errors, address: undefined });
@@ -246,17 +261,22 @@ export default function CheckoutPage() {
                     errors.address ? "border-red-400 focus:border-red-500" : "border-charcoal/15 focus:border-gold"
                   }`}
                 />
-                {errors.address && <p className="text-[11px] text-red-600 mt-1">{errors.address}</p>}
+                {errors.address && <p id="address-error" className="text-[11px] text-red-600 mt-1">{errors.address}</p>}
               </div>
 
               <div>
-                <label className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
+                <label htmlFor="checkout-city" className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
                   City *
                 </label>
                 <input
+                  id="checkout-city"
+                  name="city"
+                  autoComplete="address-level2"
                   required
                   type="text"
                   value={form.city}
+                  aria-invalid={Boolean(errors.city)}
+                  aria-describedby={errors.city ? "city-error" : undefined}
                   onChange={(e) => {
                     setForm({ ...form, city: e.target.value });
                     if (errors.city) setErrors({ ...errors, city: undefined });
@@ -266,17 +286,22 @@ export default function CheckoutPage() {
                     errors.city ? "border-red-400 focus:border-red-500" : "border-charcoal/15 focus:border-gold"
                   }`}
                 />
-                {errors.city && <p className="text-[11px] text-red-600 mt-1">{errors.city}</p>}
+                {errors.city && <p id="city-error" className="text-[11px] text-red-600 mt-1">{errors.city}</p>}
               </div>
 
               <div>
-                <label className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
+                <label htmlFor="checkout-state" className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
                   State / Province *
                 </label>
                 <input
+                  id="checkout-state"
+                  name="state"
+                  autoComplete="address-level1"
                   required
                   type="text"
                   value={form.state}
+                  aria-invalid={Boolean(errors.state)}
+                  aria-describedby={errors.state ? "state-error" : undefined}
                   onChange={(e) => {
                     setForm({ ...form, state: e.target.value });
                     if (errors.state) setErrors({ ...errors, state: undefined });
@@ -286,17 +311,22 @@ export default function CheckoutPage() {
                     errors.state ? "border-red-400 focus:border-red-500" : "border-charcoal/15 focus:border-gold"
                   }`}
                 />
-                {errors.state && <p className="text-[11px] text-red-600 mt-1">{errors.state}</p>}
+                {errors.state && <p id="state-error" className="text-[11px] text-red-600 mt-1">{errors.state}</p>}
               </div>
 
               <div>
-                <label className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
+                <label htmlFor="checkout-zip" className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
                   Postal Code *
                 </label>
                 <input
+                  id="checkout-zip"
+                  name="zip"
+                  autoComplete="postal-code"
                   required
                   type="text"
                   value={form.zip}
+                  aria-invalid={Boolean(errors.zip)}
+                  aria-describedby={errors.zip ? "zip-error" : undefined}
                   onChange={(e) => {
                     setForm({ ...form, zip: e.target.value });
                     if (errors.zip) setErrors({ ...errors, zip: undefined });
@@ -306,14 +336,17 @@ export default function CheckoutPage() {
                     errors.zip ? "border-red-400 focus:border-red-500" : "border-charcoal/15 focus:border-gold"
                   }`}
                 />
-                {errors.zip && <p className="text-[11px] text-red-600 mt-1">{errors.zip}</p>}
+                {errors.zip && <p id="zip-error" className="text-[11px] text-red-600 mt-1">{errors.zip}</p>}
               </div>
 
               <div>
-                <label className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
+                <label htmlFor="checkout-country" className="block text-[11px] tracking-widest uppercase text-muted mb-1.5 font-medium">
                   Country
                 </label>
                 <input
+                  id="checkout-country"
+                  name="country"
+                  autoComplete="country-name"
                   type="text"
                   value={form.country}
                   onChange={(e) => setForm({ ...form, country: e.target.value })}
