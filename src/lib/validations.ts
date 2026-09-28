@@ -35,4 +35,5 @@ export const newsletterSchema = z.object({
 export const cartItemSchema = z.object({
   productId: z.string(),
   quantity: z.number().int().min(1).max(10),
+  size: z.string().optional(),
 });

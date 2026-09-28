@@ -87,7 +87,7 @@ export default function CartPage() {
                     </button>
                     <span className="px-3 text-sm">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.id, Math.min(10, item.quantity + 1))}
                       className="p-2 hover:bg-cream"
                       aria-label="Increase"
                     >

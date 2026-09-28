@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { totals } = useCart();
+  const { totals, openCart } = useCart();
   const { user } = useAuth();
 
   const navLinks = [
@@ -63,10 +63,10 @@ export default function Header() {
               <User className="w-5 h-5" />
             </Link>
 
-            <Link
-              href="/cart"
+            <button
+              onClick={openCart}
               className="relative p-2 text-charcoal/70 hover:text-gold transition-colors"
-              aria-label="Cart"
+              aria-label="Open Cart Drawer"
             >
               <ShoppingBag className="w-5 h-5" />
               {totals.itemCount > 0 && (
@@ -74,7 +74,7 @@ export default function Header() {
                   {totals.itemCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             <button
               className="lg:hidden p-2 text-charcoal"

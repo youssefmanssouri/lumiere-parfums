@@ -34,6 +34,7 @@ export async function getProducts(filters?: {
   sort?: string;
   minPrice?: number;
   maxPrice?: number;
+  note?: string;
 }) {
   if (await isDatabaseAvailable()) {
     const where: Record<string, unknown> = { inStock: true };
@@ -48,6 +49,7 @@ export async function getProducts(filters?: {
     if (filters?.category) where.category = filters.category;
     if (filters?.gender) where.gender = filters.gender;
     if (filters?.featured) where.featured = true;
+    if (filters?.note) where.notes = { contains: filters.note, mode: "insensitive" };
     if (filters?.minPrice || filters?.maxPrice) {
       where.price = {};
       if (filters.minPrice) (where.price as Record<string, number>).gte = filters.minPrice;
@@ -90,6 +92,10 @@ export async function getProducts(filters?: {
   if (filters?.category) items = items.filter((p) => p.category === filters.category);
   if (filters?.gender) items = items.filter((p) => p.gender === filters.gender);
   if (filters?.featured) items = items.filter((p) => p.featured);
+  if (filters?.note) {
+    const n = filters.note.toLowerCase();
+    items = items.filter((p) => p.notes.toLowerCase().includes(n));
+  }
   if (filters?.minPrice) items = items.filter((p) => p.price >= filters.minPrice!);
   if (filters?.maxPrice) items = items.filter((p) => p.price <= filters.maxPrice!);
 

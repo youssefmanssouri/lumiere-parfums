@@ -31,8 +31,12 @@ interface CartContextType {
   items: CartItem[];
   totals: CartTotals;
   loading: boolean;
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  toggleCart: () => void;
   refreshCart: () => Promise<void>;
-  addToCart: (productId: string, quantity?: number) => Promise<void>;
+  addToCart: (productId: string, quantity?: number, size?: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -52,6 +56,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [totals, setTotals] = useState<CartTotals>(defaultTotals);
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
+  const toggleCart = useCallback(() => setIsOpen((prev) => !prev), []);
 
   const refreshCart = useCallback(async () => {
     try {
@@ -72,15 +81,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     refreshCart();
   }, [refreshCart]);
 
-  const addToCart = async (productId: string, quantity = 1) => {
+  const addToCart = async (productId: string, quantity = 1, size?: string) => {
     const res = await fetch("/api/cart/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId, quantity }),
+      body: JSON.stringify({ productId, quantity, size }),
     });
     const data = await res.json();
     if (data.success) {
       await refreshCart();
+      setIsOpen(true);
     } else {
       throw new Error(data.error);
     }
@@ -111,6 +121,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         items,
         totals,
         loading,
+        isOpen,
+        openCart,
+        closeCart,
+        toggleCart,
         refreshCart,
         addToCart,
         updateQuantity,

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, getAuthUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess } from "@/lib/api";
 
@@ -12,6 +12,47 @@ const ALLOWED_ORDER_STATUSES = [
 ] as const;
 type OrderStatus = (typeof ALLOWED_ORDER_STATUSES)[number];
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getAuthUser();
+    if (!user) {
+      return apiError("Unauthorized", 401);
+    }
+
+    const { id } = await params;
+    if (!id || typeof id !== "string") {
+      return apiError("Order ID required", 400);
+    }
+
+    const { isDatabaseAvailable } = await import("@/lib/db");
+    if (!(await isDatabaseAvailable())) {
+      return apiError("Database service unavailable", 503);
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+
+    if (!order) {
+      return apiError("Order not found", 404);
+    }
+
+    if (user.role !== "admin" && order.userId !== user.userId) {
+      return apiError("Forbidden", 403);
+    }
+
+    return apiSuccess({ order });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Fetch failed";
+    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    return apiError(message, status);
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -20,7 +61,7 @@ export async function PATCH(
     await requireAdmin();
 
     const { id } = await params;
-    if (!id) {
+    if (!id || typeof id !== "string") {
       return apiError("Order ID required", 400);
     }
 

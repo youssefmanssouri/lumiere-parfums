@@ -21,14 +21,14 @@ export async function POST(request: NextRequest) {
       return apiError(parsed.error.errors[0].message);
     }
 
-    const { productId, quantity } = parsed.data;
+    const { productId, quantity, size } = parsed.data;
 
     if (!(await isDatabaseAvailable())) {
       const product = getStaticProducts().find((p) => p.id === productId);
       if (!product || !product.inStock) {
         return apiError("Product not available", 404);
       }
-      await addToCartCookie(productId, quantity);
+      await addToCartCookie(productId, quantity, size);
       const cart = await getOrCreateCart();
       const totals = calculateCartTotals(cart.items);
       return apiSuccess({ message: "Added to cart", totals });
@@ -83,9 +83,9 @@ export async function PATCH(request: NextRequest) {
 
     if (!(await isDatabaseAvailable())) {
       const cart = await getOrCreateCart();
-      const item = cart.items.find((i) => i.id === itemId);
+      const item = cart.items.find((i) => i.id === itemId || i.productId === itemId);
       if (!item) return apiError("Item not found", 404);
-      await updateCartCookie(item.productId, quantity);
+      await updateCartCookie(item.id, quantity);
       const updatedCart = await getOrCreateCart();
       const totals = calculateCartTotals(updatedCart.items);
       return apiSuccess({ totals });
@@ -129,9 +129,9 @@ export async function DELETE(request: NextRequest) {
 
     if (!(await isDatabaseAvailable())) {
       const cart = await getOrCreateCart();
-      const item = cart.items.find((i) => i.id === itemId);
+      const item = cart.items.find((i) => i.id === itemId || i.productId === itemId);
       if (!item) return apiError("Item not found", 404);
-      await updateCartCookie(item.productId, 0);
+      await updateCartCookie(item.id, 0);
       const updatedCart = await getOrCreateCart();
       const totals = calculateCartTotals(updatedCart.items);
       return apiSuccess({ totals });

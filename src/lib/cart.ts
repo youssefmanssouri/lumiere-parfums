@@ -23,6 +23,8 @@ export interface CartItemWithProduct {
 interface CookieCartItem {
   productId: string;
   quantity: number;
+  size?: string;
+  price?: number;
 }
 
 async function getCookieCart(): Promise<{ items: CartItemWithProduct[] }> {
@@ -52,9 +54,9 @@ async function getCookieCart(): Promise<{ items: CartItemWithProduct[] }> {
           slug: product.slug as string,
           name: product.name,
           brand: product.brand,
-          price: product.price,
+          price: item.price !== undefined ? item.price : product.price,
           image: product.image,
-          size: product.size,
+          size: item.size || product.size,
           inStock: product.inStock,
         },
       };
@@ -145,38 +147,57 @@ export async function getOrCreateCart(userId?: string) {
   return cart;
 }
 
-export async function addToCartCookie(productId: string, quantity: number) {
+export async function addToCartCookie(
+  productId: string,
+  quantity: number,
+  size?: string,
+  price?: number
+) {
   const cart = await getCookieCart();
   const items: CookieCartItem[] = cart.items.map((i) => ({
     productId: i.productId,
     quantity: i.quantity,
+    size: i.product.size,
+    price: i.product.price,
   }));
 
-  const existing = items.find((i) => i.productId === productId);
+  const existing = items.find(
+    (i) => i.productId === productId && (!size || i.size === size)
+  );
   if (existing) {
     existing.quantity = Math.min(existing.quantity + quantity, 10);
   } else {
-    items.push({ productId, quantity });
+    items.push({ productId, quantity, size, price });
   }
 
   await setCookieCart(items);
 }
 
-export async function updateCartCookie(productId: string, quantity: number) {
+export async function updateCartCookie(identifier: string, quantity: number) {
   const cart = await getCookieCart();
-  let items: CookieCartItem[] = cart.items.map((i) => ({
+  let items = cart.items.map((i) => ({
+    id: i.id,
     productId: i.productId,
     quantity: i.quantity,
+    size: i.product.size,
+    price: i.product.price,
   }));
 
   if (quantity <= 0) {
-    items = items.filter((i) => i.productId !== productId);
+    items = items.filter((i) => i.id !== identifier && i.productId !== identifier);
   } else {
-    const existing = items.find((i) => i.productId === productId);
+    const existing = items.find((i) => i.id === identifier || i.productId === identifier);
     if (existing) existing.quantity = quantity;
   }
 
-  await setCookieCart(items);
+  await setCookieCart(
+    items.map(({ productId, quantity, size, price }) => ({
+      productId,
+      quantity,
+      size,
+      price,
+    }))
+  );
 }
 
 export async function clearCookieCart() {
